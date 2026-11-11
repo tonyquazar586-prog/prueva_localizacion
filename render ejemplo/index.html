@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width">
+
+ <title>Render en el cliente</title>
+
+ <script src="dompurify/purify.min.js"></script>
+ <script type="module" src="libclienteweb/manejaErrores.js"></script>
+
+</head>
+
+<body>
+
+ <h1>Render en el cliente</h1>
+
+ <dl id="lista">
+  <dt>Cargando&hellip;</dt>
+  <dd><progress max="100">Cargando&hellip;</progress></dd>
+ </dl>
+
+ <script type="module">
+
+  import { consume } from "./libclienteweb/consume.js"
+  import { recibeJson } from "./libclienteweb/recibeJson.js"
+  import { htmlentities } from "./libclienteweb/htmlentities.js"
+
+  descargaDatos()
+
+  async function descargaDatos() {
+  const respuesta = await consume(recibeJson("api/lista.php"))
+  const json = await respuesta.json()
+    // Genera el código HTML de la lista.
+    let render = ""
+    for (const modelo of json) {
+     /* Codifica nombre y color para que cambie los caracteres especiales y
+      * el texto no se pueda interpretar como HTML. Esta técnica evita la
+      * inyección de código. */
+     const nombre =
+      typeof modelo.nombre === "string" ? htmlentities(modelo.nombre) : ""
+     const color =
+      typeof modelo.color === "string" ? htmlentities(modelo.color) : ""
+     render += /* html */
+      `<dt>${nombre}</dt>
+       <dd>${color}</dd>`
+    }
+    lista.innerHTML = DOMPurify.sanitize(render)
+  }
+
+ </script>
+
+</body>
+
+</html>
